@@ -10,6 +10,8 @@ export { PolicyApi } from './policy.js';
 export { X402Api } from './x402.js';
 export { FacilitatorApi } from './facilitator.js';
 export { IdentityApi } from './identity.js';
+export { ReputationApi } from './reputation.js';
+export { ValidationApi } from './validation.js';
 export { AgentApiError, AgentConfigError } from './errors.js';
 
 export type {
@@ -44,4 +46,20 @@ export type {
   Tier,
   TierMax,
   VerifyResponse,
+  // ERC-8004 reputation (Lever #2)
+  GetScoreOptions,
+  ReputationScore,
+  FeedbackEntry,
+  ListFeedbackOptions,
+  ListFeedbackResponse,
+  GiveFeedbackInput,
+  GiveFeedbackResult,
+  // ERC-8004 validation (Lever #1)
+  ValidationStatus,
+  ValidationRequest,
+  RequestValidationInput,
+  RespondValidationInput,
+  ChallengeValidationInput,
+  ListValidationsOptions,
+  ListValidationsResponse,
 } from './types.js';

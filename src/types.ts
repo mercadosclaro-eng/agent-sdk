@@ -266,6 +266,161 @@ export interface IdentityInfo {
   }>;
 }
 
+// ── ERC-8004 reputation (Lever #2 — the trust score) ────────────────────
+
+export interface GetScoreOptions {
+  chain?: string;
+  /** Bring-your-own trust circle: restrict the score to these reviewer addresses. */
+  clients?: string[];
+  /** Only count endorsements carrying this tag (e.g. 'price-data'). */
+  tag?: string;
+}
+
+/**
+ * The computed trust score. `score` is the 4-lens weighted result; `basis`
+ * tells you honestly what backs it (see COMPLETE_STACK_ARCHITECTURE.md).
+ */
+export interface ReputationScore {
+  agentId:       string;
+  chain:         string;
+  score:         number;   // 0..100 composite
+  confidence:    number;   // 0..1 — how much data backs the score
+  basis:         'bonded' | 'mixed' | 'opinion-only';
+  bondedCount:   number;   // # of bonded successes counted (Lever #1 facts)
+  feedbackCount: number;   // # of raw opinions counted
+  breakdown: {
+    independence:        number;  // Lens 1 — who said it
+    recency:             number;  // Lens 2 — when
+    bondedness:          number;  // Lens 3 — skin in the game
+    verificationDensity: number;  // Lens 4 — how well-watched
+  };
+  asOf: string;
+}
+
+export interface FeedbackEntry {
+  agentId:    string;
+  client:     string;   // reviewer address
+  index:      number;
+  value:      number;   // signed; positive = good
+  tag1?:      string;
+  tag2?:      string;
+  bonded:     boolean;  // backed by a bonded validation?
+  revoked:    boolean;
+  createdAt?: string;
+}
+
+export interface ListFeedbackOptions {
+  clients?: string[];
+  tag?:     string;
+  chain?:   string;
+  limit?:   number;
+  cursor?:  string;
+}
+
+export interface ListFeedbackResponse {
+  agentId:     string;
+  entries:     FeedbackEntry[];
+  count:       number;
+  nextCursor?: string;
+}
+
+export interface GiveFeedbackInput {
+  /** Agent being reviewed. */
+  agentId:      string;
+  /** Reviewer — must be a different agent (self-review is rejected on-chain). */
+  fromAgentId:  string;
+  /** e.g. +100 (good) or -100 (bad). */
+  value:        number;
+  tag1?:        string;
+  tag2?:        string;
+  feedbackURI?: string;
+  chain?:       string;
+}
+
+export interface GiveFeedbackResult {
+  agentId: string;
+  client:  string;
+  index:   number;
+  txHash?: string;
+}
+
+// ── ERC-8004 validation (Lever #1 — the bonded gate) ────────────────────
+
+export type ValidationStatus =
+  | 'requested'   // waiting on the validator
+  | 'responded'   // validator answered; challenge window open
+  | 'disputed'    // someone challenged; awaiting the resolver
+  | 'finalized'   // survived the window → BONDED SUCCESS
+  | 'slashed'     // proven wrong → validator stake slashed
+  | 'dismissed'   // challenge failed → validator paid
+  | 'expired';    // validator never answered
+
+export interface ValidationRequest {
+  requestId:          string;
+  validatorId:        string;
+  agentId:            string;   // agent whose work is validated
+  dataHash:           string;
+  dataURI?:           string;
+  chain:              string;
+  reward:             string;   // atomic units, paid to validator
+  status:             ValidationStatus;
+  score?:             number;   // 0..100 (once responded)
+  success?:           boolean;
+  evidenceURI?:       string;
+  challengeDeadline?: string;   // ISO time the window closes
+  bonded:             boolean;  // true once finalized (survived scrutiny)
+  createdAt:          string;
+  updatedAt?:         string;
+}
+
+export interface RequestValidationInput {
+  /** Agent whose work is being validated (usually your own agent). */
+  agentId:     string;
+  /** Validator you're asking to certify the work. */
+  validatorId: string;
+  /** Hash committing to the exact data/claim being validated. */
+  dataHash:    string;
+  /** Where the full data lives — must stay available through the challenge window. */
+  dataURI?:    string;
+  /** Reward paid to the validator, atomic units. */
+  reward:      string;
+  chain?:      string;
+}
+
+export interface RespondValidationInput {
+  requestId:    string;
+  validatorId:  string;
+  /** 0..100. `success` defaults to score >= 50. */
+  score:        number;
+  success?:     boolean;
+  evidenceURI?: string;
+  chain?:       string;
+}
+
+export interface ChallengeValidationInput {
+  requestId:          string;
+  /** The agent raising the challenge. */
+  challengerId:       string;
+  /** Evidence the validator's answer was wrong. */
+  counterEvidenceURI: string;
+  chain?:             string;
+}
+
+export interface ListValidationsOptions {
+  /** Filter by the agent's role in the validation. */
+  role?:   'agent' | 'validator';
+  status?: ValidationStatus | 'all';
+  chain?:  string;
+  limit?:  number;
+  cursor?: string;
+}
+
+export interface ListValidationsResponse {
+  validations: ValidationRequest[];
+  count:       number;
+  nextCursor?: string;
+}
+
 export interface ClientConfig {
   apiKey:           string;
   /** Default: https://pmwv2d8iwa.execute-api.eu-north-1.amazonaws.com */

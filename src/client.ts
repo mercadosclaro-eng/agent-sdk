@@ -13,6 +13,9 @@
  *   .agents       — CRUD for agent wallets (create/list/get/balance/revoke)
  *   .policy       — read/set project default + per-agent overrides
  *   .x402         — sign + pay
+ *   .identity     — ERC-8004 on-chain identity (register/link)
+ *   .reputation   — ERC-8004 trust score (read + leave feedback)  [Lever #2]
+ *   .validation   — ERC-8004 bonded validation (request/respond/challenge)  [Lever #1]
  *   .facilitator  — direct verify/settle (advanced)
  */
 import { AgentsApi } from './agents.js';
@@ -20,6 +23,8 @@ import { PolicyApi } from './policy.js';
 import { X402Api } from './x402.js';
 import { FacilitatorApi } from './facilitator.js';
 import { IdentityApi } from './identity.js';
+import { ReputationApi } from './reputation.js';
+import { ValidationApi } from './validation.js';
 import { makeHttp } from './http.js';
 import { AgentConfigError } from './errors.js';
 import type { ClientConfig } from './types.js';
@@ -32,6 +37,8 @@ export class OxGasAgent {
   readonly policy:      PolicyApi;
   readonly x402:        X402Api;
   readonly identity:    IdentityApi;
+  readonly reputation:  ReputationApi;
+  readonly validation:  ValidationApi;
   readonly facilitator: FacilitatorApi;
 
   /** Useful for diagnostics + logs. */
@@ -57,9 +64,11 @@ export class OxGasAgent {
 
     const http = makeHttp({ baseUrl: this.apiUrl, apiKey: config.apiKey, fetch: fetchFn });
     this.facilitator = new FacilitatorApi({ baseUrl: this.facilitatorUrl, fetch: fetchFn });
-    this.agents   = new AgentsApi(http);
-    this.policy   = new PolicyApi(http);
-    this.x402     = new X402Api(http, this.facilitator);
-    this.identity = new IdentityApi(http, this.facilitatorUrl, fetchFn);
+    this.agents     = new AgentsApi(http);
+    this.policy     = new PolicyApi(http);
+    this.x402       = new X402Api(http, this.facilitator);
+    this.identity   = new IdentityApi(http, this.facilitatorUrl, fetchFn);
+    this.reputation = new ReputationApi(http);
+    this.validation = new ValidationApi(http);
   }
 }

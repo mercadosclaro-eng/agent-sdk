@@ -1,0 +1,17 @@
+{
+  "name": "0xgasless-trust-stack-demo",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "End-to-end demo of the 0xgasless agent stack: wallet + x402 + ERC-8004 identity/validation/reputation",
+  "scripts": {
+    "demo": "tsx demo.ts"
+  },
+  "dependencies": {
+    "@0xgasless/agent": "^2.0.0"
+  },
+  "devDependencies": {
+    "tsx": "^4.7.0",
+    "typescript": "^5.4.0"
+  }
+}

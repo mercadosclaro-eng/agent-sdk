@@ -34,10 +34,10 @@ const DEFAULT_TOKEN = ((typeof import.meta !== 'undefined' && (import.meta as an
  * ERC-8004 v0.2 Contract Addresses - Fuji Testnet
  */
 export const ERC8004_V2 = {
-  identityRegistry: '0x372d406040064a9794d14f3f8fec0f2e13e5b99f',
-  reputationRegistry: '0x8B106121EeEC204a1EA012E8560090a85d4C5350',
-  validationRegistry: '0x6ab685d73513918a5d76d90cbc089583b92f029e',
-  validationPlugin: '0x6b35bEc82E5623dbc67Aa921dB10fF719C77E1fB',
+  identityRegistry: '0xD610EB5f4dbBa10EB1bC95C9e84c025dCeac8291',
+  reputationRegistry: '0x8969005399f7440b2758950248dA385471fF4AF5',
+  validationRegistry: '0xE85759f7EB1D41d3AF295a16b1e2DB17270d4c81',
+  validationPlugin: '0x747B2d23F1DA86ADf55f0E886af72b6E7019BE19',
 };
 
 /**
