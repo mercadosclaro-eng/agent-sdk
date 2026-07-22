@@ -15,8 +15,8 @@
  */
 
 const FACILITATOR_URL = ((typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_X402_FACILITATOR_URL) as string)
-  || process.env.X402_FACILITATOR_URL 
-  || 'https://testnet.0xgasless.com';
+  || process.env.X402_FACILITATOR_URL
+  || 'https://x402.0xgasless.com';  // live facilitator (Fuji + mainnet); testnet.0xgasless.com is dead
 
 const DEFAULT_TOKEN = ((typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_DEFAULT_TOKEN) as string)
   || process.env.DEFAULT_TOKEN 

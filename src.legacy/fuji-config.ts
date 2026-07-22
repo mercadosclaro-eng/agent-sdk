@@ -16,12 +16,12 @@
  * - ValidationPlugin: 0x83dab1f7be37c5c4b84743b72642c9651de7f12b
  */
 
-// x402 Facilitator URLs
-// Testnet: https://testnet.0xgasless.com
-// Mainnet: https://x402.0xgasless.com
+// x402 Facilitator URLs. The single live facilitator (x402.0xgasless.com) serves
+// BOTH Fuji (43113) and mainnet (43114). The old testnet.0xgasless.com domain is
+// dead (NXDOMAIN) — do not use it. Override per env with VITE_X402_FACILITATOR_URL.
 const TESTNET_FACILITATOR_URL = ((typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_X402_FACILITATOR_URL) as string)
-  || process.env.X402_FACILITATOR_URL 
-  || 'https://testnet.0xgasless.com';
+  || process.env.X402_FACILITATOR_URL
+  || 'https://x402.0xgasless.com';
 const MAINNET_FACILITATOR_URL = 'https://x402.0xgasless.com';
 
 const DEFAULT_TOKEN = ((typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_DEFAULT_TOKEN) as string)

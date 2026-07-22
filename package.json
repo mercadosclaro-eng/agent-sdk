@@ -1,6 +1,6 @@
 {
   "name": "@0xgasless/agent",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "TypeScript client for the 0xgas agent platform — KMS-managed agent wallets, x402 micropayments on Avalanche/Fuji/Base, and ERC-8004 on-chain identity. Zero gas, zero key management.",
   "type": "module",
   "main": "dist/index.js",
