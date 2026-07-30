@@ -13,6 +13,7 @@ export { IdentityApi } from './identity.js';
 export { ReputationApi } from './reputation.js';
 export { ValidationApi } from './validation.js';
 export { AgentApiError, AgentConfigError } from './errors.js';
+export { isSvmPayload } from './types.js';
 
 export type {
   ActivityResponse,
@@ -23,9 +24,14 @@ export type {
   BalanceEntry,
   BalanceResponse,
   Chain,
+  ChainFamily,
   ClientConfig,
   CreateAgentInput,
   CustodyType,
+  EvmPaymentPayload,
+  EvmPaymentRequirements,
+  SvmPaymentPayload,
+  SvmPaymentRequirements,
   IdentityInfo,
   IdentityLinkInput,
   IdentityLinkResult,

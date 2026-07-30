@@ -5,7 +5,12 @@
  * a field here, also confirm the Lambda response matches.
  */
 
-export type Chain = 'avalanche' | 'avalanche-fuji' | 'fuji' | 'base';
+export type Chain =
+  | 'avalanche' | 'avalanche-fuji' | 'fuji' | 'base'   // EVM (secp256k1)
+  | 'solana' | 'solana-devnet';                        // SVM (ed25519)
+
+/** EVM chains settle EIP-3009; Solana chains settle the exact-SVM scheme. */
+export type ChainFamily = 'evm' | 'svm';
 export type AgentStatus = 'active' | 'paused' | 'revoked';
 export type Tier = 'free' | 'builder' | 'enterprise';
 export type CustodyType = 'hd' | 'kms';
@@ -112,7 +117,11 @@ export type SetPolicyInput =
   | { scope: 'project'; x402Enabled?: boolean; policy?: Partial<AgentPolicy> }
   | { scope: 'agent'; agentId: string; policy: Partial<AgentPolicy> };
 
-/** Canonical x402 payment payload returned by the sign Lambda. */
+// ── x402 payment payloads ───────────────────────────────────────────────
+// Two chain families produce structurally different payloads. Both are opaque
+// to the SDK (sign → settle passthrough), but typed here so callers can narrow.
+
+/** EVM: an EIP-3009 TransferWithAuthorization (from the token's own domain). */
 export interface PaymentAuthorization {
   from:        string;
   to:          string;
@@ -122,19 +131,44 @@ export interface PaymentAuthorization {
   nonce:       string;   // 0x + 64 hex
 }
 
-export interface PaymentPayload {
-  token: string;
+export interface EvmPaymentPayload {
+  token: string;                    // 0x token address
   payload: {
     authorization: PaymentAuthorization;
-    signature:     string;
+    signature:     string;          // 0x EIP-712 signature
   };
 }
 
-export interface PaymentRequirements {
+/** Solana (exact-SVM): a base64 partially-signed versioned transaction. */
+export interface SvmPaymentPayload {
+  token: string;                    // base58 SPL mint
+  payload: {
+    transaction: string;            // base64 tx (agent-signed; facilitator co-signs as fee payer)
+  };
+}
+
+export type PaymentPayload = EvmPaymentPayload | SvmPaymentPayload;
+
+/** Type guard: narrow a payload to the Solana (exact-SVM) shape. */
+export function isSvmPayload(p: PaymentPayload): p is SvmPaymentPayload {
+  return typeof (p as any)?.payload?.transaction === 'string';
+}
+
+export interface EvmPaymentRequirements {
   network:           string;
   chainId:           number;
   relayerContract?:  string;
 }
+
+/** Solana requirements: CAIP-2 network, mint, recipient, and the fee payer. */
+export interface SvmPaymentRequirements {
+  network:   string;   // CAIP-2, e.g. 'solana:5eykt4Us...'
+  asset:     string;   // base58 SPL mint
+  payTo:     string;   // recipient wallet (base58)
+  feePayer:  string;   // facilitator fee payer (base58)
+}
+
+export type PaymentRequirements = EvmPaymentRequirements | SvmPaymentRequirements;
 
 export interface SignX402Input {
   agentId:      string;
@@ -154,6 +188,9 @@ export interface SignX402Response {
   agentId:             string;
   tokenSymbol:         string;
   chain:               string;
+  /** Solana only: the source/destination Associated Token Accounts. */
+  sourceAta?:          string;
+  destAta?:            string;
   policy: {
     perTxCapUSD:       number | null;
     perDayCapUSD:      number | null;

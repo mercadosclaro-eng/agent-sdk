@@ -16,7 +16,7 @@ npm install @0xgasless/agent
 - **x402 micropayments** — sign canonical EIP-3009 `TransferWithAuthorization` for USDC on Avalanche, Fuji, Base. Policy enforced before signing — per-call + per-day spend caps live in the platform, not in your app.
 - **No gas on the agent** — the 0xgas facilitator pays the on-chain gas. Agents only hold the USDC they need to spend.
 - **Live audit log** — every `/verify` and `/settle` is recorded in DynamoDB; surface it in your own UI or query for compliance.
-- **Multi-chain from day one** — same SDK call, just change `chain: 'base'`.
+- **Multi-chain from day one** — same SDK call, just change `chain`. EVM (`avalanche`, `avalanche-fuji`, `base`) and Solana (`solana`, `solana-devnet`).
 
 ## Quick start
 
@@ -73,6 +73,49 @@ client.identity.info()                   // GET  /identity/info on the facilitat
 client.facilitator.verify(payload, req)  // POST /verify  on the facilitator
 client.facilitator.settle(payload, req)  // POST /settle  on the facilitator
 ```
+
+## Solana (same API, exact-SVM scheme)
+
+The same calls work on Solana — pass a Solana `chain`. Agents get an Ed25519
+wallet (base58 address), pay in USDC or XSGD, and the facilitator sponsors gas
+just like on EVM. USD caps, tiers, and policy are identical.
+
+```ts
+// Create a Solana agent (Ed25519, base58 address)
+const agent = await client.agents.create({
+  agentId: 'sol-bot-1',
+  chain:   'solana',          // or 'solana-devnet' for testing
+});
+console.log(agent.address);   // e.g. J1Pgf2xWL2tt2A1Uuor19jGsr2rXGprobmEwMVnq2ZuY
+//                            ← fund with USDC/XSGD on Solana
+
+// Pay a merchant — 10 XSGD
+const result = await client.x402.pay({
+  agentId:     'sol-bot-1',
+  to:          '8zkHBZ…',      // recipient wallet (base58); its token account must exist
+  value:       '10000000',     // atomic units (6 decimals)
+  tokenSymbol: 'XSGD',
+  chain:       'solana',
+});
+console.log('Signature:', result.settle?.transaction);
+```
+
+The payload differs by family — on Solana it carries a base64 partially-signed
+transaction rather than an EIP-712 signature. If you inspect payloads directly,
+narrow with the `isSvmPayload` guard:
+
+```ts
+import { isSvmPayload } from '@0xgasless/agent';
+
+const signed = await client.x402.sign({ agentId: 'sol-bot-1', to, value, tokenSymbol: 'XSGD', chain: 'solana' });
+if (isSvmPayload(signed.paymentPayload)) {
+  console.log('base64 tx:', signed.paymentPayload.payload.transaction);
+}
+```
+
+**Note:** on Solana the recipient must already have an Associated Token Account
+for the mint (the gasless fee-payer can't fund ATA creation). Any wallet that
+has ever held that token already has one.
 
 ## ERC-8004 identity (gas-sponsored)
 
