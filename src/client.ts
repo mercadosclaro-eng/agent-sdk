@@ -66,7 +66,7 @@ export class OxGasAgent {
     this.facilitator = new FacilitatorApi({ baseUrl: this.facilitatorUrl, fetch: fetchFn });
     this.agents     = new AgentsApi(http);
     this.policy     = new PolicyApi(http);
-    this.x402       = new X402Api(http, this.facilitator);
+    this.x402       = new X402Api(http, this.facilitator, fetchFn);
     this.identity   = new IdentityApi(http, this.facilitatorUrl, fetchFn);
     this.reputation = new ReputationApi(http);
     this.validation = new ValidationApi(http);

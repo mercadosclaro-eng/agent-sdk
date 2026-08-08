@@ -1,6 +1,6 @@
 {
   "name": "@0xgasless/agent",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "TypeScript client for the 0xgas agent platform \u2014 KMS-managed agent wallets, x402 micropayments on Avalanche/Fuji/Base, and ERC-8004 on-chain identity. Zero gas, zero key management.",
   "type": "module",
   "main": "dist/index.js",
@@ -21,7 +21,8 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "test": "npm run build && node --test"
   },
   "keywords": [
     "0xgasless",

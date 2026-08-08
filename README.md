@@ -117,6 +117,34 @@ if (isSvmPayload(signed.paymentPayload)) {
 for the mint (the gasless fee-payer can't fund ATA creation). Any wallet that
 has ever held that token already has one.
 
+## Paying any x402 endpoint on the internet (`payFetch`)
+
+New in 2.2.0. `payFetch` runs the standard x402 client flow against **any**
+402-responding URL — probe, parse the merchant's payment requirements, sign
+with the agent's custodied wallet (policy caps enforced as always), retry with
+the base64 `X-PAYMENT` header:
+
+```ts
+const { response, payment } = await client.x402.payFetch(
+  'https://api.example.com/paid-data',
+  {
+    agentId: 'bot-1',
+    maxValue: '1000000',              // refuse to pay more than 1 USDC
+    chains: ['avalanche', 'base'],    // optional: restrict payable chains
+  },
+);
+const data = await response.json();
+```
+
+Notes:
+- Non-402 responses pass straight through (no payment, `payment` is undefined).
+- The merchant picks the requirement list; `payFetch` selects the first entry
+  the platform can satisfy (supported chain + USDC/XSGD). Unpayable → clear error.
+- The merchant's side settles (that's the x402 model). When the merchant runs on
+  the 0xgasless facilitator, settlement lands on x402.0xgasless.com as usual.
+- Wire-format helpers are exported for custom flows: `toX402Envelope(signed)`,
+  `encodeXPaymentHeader(envelope)`, `parseAccepts(body)`, `selectRequirement(accepts)`.
+
 ## ERC-8004 identity (gas-sponsored)
 
 ```ts

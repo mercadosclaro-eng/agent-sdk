@@ -14,6 +14,20 @@ export { ReputationApi } from './reputation.js';
 export { ValidationApi } from './validation.js';
 export { AgentApiError, AgentConfigError } from './errors.js';
 export { isSvmPayload } from './types.js';
+export {
+  toX402Envelope,
+  encodeXPaymentHeader,
+  chainForNetwork,
+  symbolForAsset,
+  parseAccepts,
+  selectRequirement,
+} from './x402-http.js';
+export type {
+  X402Envelope,
+  X402Requirement,
+  PayFetchOptions,
+  PayFetchResult,
+} from './x402-http.js';
 
 export type {
   ActivityResponse,
