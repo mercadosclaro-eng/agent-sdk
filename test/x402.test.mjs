@@ -182,6 +182,30 @@ test('payFetch: maxValue guard refuses over-priced requirements', async () => {
   );
 });
 
+test('payFetch: beforeSign can inspect and veto before any signature is created', async () => {
+  const { client, calls } = makeClient([
+    ['/v1/agent/x402/sign', () => json(200, SIGNED_EVM)],
+    ['merchant.example', () => json(402, MERCHANT_402)],
+  ]);
+
+  await assert.rejects(
+    () => client.x402.payFetch('https://merchant.example/data', {
+      agentId: 'bot-1',
+      beforeSign: ({ url, agentId, requirement, chain, tokenSymbol }) => {
+        assert.equal(url, 'https://merchant.example/data');
+        assert.equal(agentId, 'bot-1');
+        assert.equal(requirement.payTo, '0xMerchant');
+        assert.equal(chain, 'avalanche-fuji');
+        assert.equal(tokenSymbol, 'USDC');
+        throw new Error('policy denied');
+      },
+    }),
+    /policy denied/,
+  );
+
+  assert.equal(calls.some((c) => c.url.includes('/v1/agent/x402/sign')), false);
+});
+
 test('payFetch: unpayable requirements produce a clear error', async () => {
   const unpayable = { accepts: [{ network: 'eip155:1', asset: '0xdead', payTo: '0xA', maxAmountRequired: '1' }] };
   const { client } = makeClient([['merchant.example', () => json(402, unpayable)]]);
