@@ -55,6 +55,18 @@ export interface PayFetchOptions {
   chains?: Chain[];
   /** Extra fetch options for both the probe and the paid retry. */
   init?: RequestInit;
+  /**
+   * Optional fail-closed policy hook. It runs after a payable requirement is
+   * selected and validated, but before the platform is asked to sign it.
+   * Throw to stop the payment.
+   */
+  beforeSign?: (context: {
+    url: string;
+    agentId: string;
+    requirement: X402Requirement;
+    chain: Chain;
+    tokenSymbol: string;
+  }) => void | Promise<void>;
 }
 
 export interface PayFetchResult {
